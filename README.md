@@ -16,6 +16,8 @@ A Simple tool to display the Service Banner of open ports.
 ### **Clone the Repository**
 ```console
 git clone https://github.com/spider00009/Banner-Grabber.git
+```
+```console
 cd Banner-Grabber
 ```
 ```console
