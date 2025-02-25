@@ -1,19 +1,23 @@
-# 📌 Banner-Grabber  
-*A simple tool to display the Service Banner.*
+# 🛡️ Banner-Grabber  
+A Simple tool to display the Service Banner of open ports.
 
 ---
-
 ## 🚀 Features  
-✅ Easy to use  
-✅ Helpful comments and documentation in the generated code  
-✅ Supported OS: **Linux**  
+- ✅ Easy to Use  
+- ✅ Helpful comments and documentation  
+- ✅ Supported OS: **Linux**  
+- ✅ Custo```consolem Port Scanning  
+- ✅ Supports **IP addresses & Domains**  
 
 ---
 
 ## 📌 Installation & Usage  
 
 ### **Clone the Repository**
-```bash
+```console
 git clone https://github.com/spider00009/Banner-Grabber.git
 cd Banner-Grabber
+```
+```console
 python3 banner.py -h
+
