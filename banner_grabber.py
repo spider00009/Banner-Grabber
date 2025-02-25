@@ -1,71 +1,81 @@
+ #!/usr/bin/env python3
+
+# Script Name : Banner-Grabber.py 
+# Author : Ayan Acharya
+# Created : 26-02-2025
+# Purpose : Simple Service Banner Grabbing Tool
+# Usage : python3 banner.py <IP> <PORT>
+
 import socket
-import threading
-import argparse
+import sys
 
-# Colors for better visibility
-GREEN = "\033[92m"
-RED = "\033[91m"
-YELLOW = "\033[93m"
-RESET = "\033[0m"
+usage = "\033[1m[+]\033[0m \033[1m\033[32mUsage : python3 banner.py <IP> <PORT>\033[0m\033[0m"
+banner = '''\n\033[1m\033[0m \033[1m\033[32m
+     ___  ____              ___  ___
+    / _/ /   / /|  / /|  / /    / _/  
+   / _  / - / / | / / | / /--  / |
+  /__/ /   / /  |/ /  |/ /___ /  |
+ \033[0m\033[0m
+                         \033[0m \033[1m\033[31m@Ayan_Acharya\033[0m\033[31m
 
-# Function to grab banner
-def grab_banner(target, port):
+'''
+
+# Validate IP Address
+def is_valid_ip(ip_str):
     try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.settimeout(3)  # Set timeout
-            s.connect((target, port))
-            s.send(b"HEAD / HTTP/1.1\r\nHost: example.com\r\n\r\n")
-            banner = s.recv(1024).decode(errors='ignore').strip()
-            print(f"{GREEN}[+] Port {port} - {banner}{RESET}")
+        socket.inet_aton(ip_str)
+        return True
+    except socket.error:
+        return False
 
-            # Save results
-            with open("banners.txt", "a") as f:
-                f.write(f"{target}:{port} - {banner}\n")
+# Validate Port Number
+def is_valid_port(port_str):
+    try:
+        port = int(port_str)
+        return 0 <= port <= 65535
+    except ValueError:
+        return False
 
-    except socket.timeout:
-        print(f"{YELLOW}[!] Port {port} - Timed out{RESET}")
-    except Exception:
-        print(f"{RED}[-] Port {port} - Connection failed{RESET}")
+# Check if arguments are provided
+if len(sys.argv) != 3:
+    print(banner)
+    print(usage)
+    sys.exit()
 
-# Function to scan for open ports and grab banners
-def scan_target(target, ports):
-    threads = []
-    for port in ports:
-        t = threading.Thread(target=grab_banner, args=(target, port))
-        t.start()
-        threads.append(t)
+# Get input values
+ip = str(sys.argv[1])
+port = str(sys.argv[2])
 
-    for t in threads:
-        t.join()
+# Validate IP and Port
+if not is_valid_ip(ip):
+    print("\n\033[1m[+]\033[0m \033[1m\033[31mInvalid IP address. Please provide a valid IP.\033[0m\033[0m")
+    sys.exit()
+    
+if not is_valid_port(port):
+    print("\n\033[1m[+]\033[0m \033[1m\033[31mInvalid PORT number. Must be between 0-65535.\033[0m\033[0m")
+    sys.exit()
 
-# Function to auto-detect open ports
-def detect_open_ports(target, port_range):
-    print(f"{YELLOW}[*] Scanning {target} for open ports...{RESET}")
-    open_ports = []
-    for port in port_range:
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.settimeout(1)
-                if s.connect_ex((target, port)) == 0:
-                    open_ports.append(port)
-                    print(f"{GREEN}[+] Port {port} is open{RESET}")
-        except:
-            continue
-    return open_ports
+try:
+    print(banner)
+    print("\n\033[1m[+]\033[0m \033[1m\033[34mConnecting to\033[0m\033[34m", ip, "on port", port, "...\033[0m")
+    
+    # Create Socket Connection
+    s = socket.socket()
+    s.settimeout(5)
+    s.connect((ip, int(port)))
+    
+    # Receive Banner
+    response = s.recv(1024).decode('utf-8').strip()
+    print("\n\033[1m[+]\033[0m \033[1m\033[32mResponse:\033[0m\033[0m", response, "\033[0m\033[0m")
+    
+except ConnectionRefusedError:
+    print("\n\033[1m[+]\033[0m \033[1m\033[31mConnection refused. The port may not be open.\033[0m\033[0m")
 
-# Main function
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Advanced Banner Grabber Tool")
-    parser.add_argument("-t", "--target", required=True, help="Target IP or domain")
-    parser.add_argument("-p", "--ports", help="Comma-separated list of ports (e.g., 22,80,443) or 'auto' for auto-scan")
-    args = parser.parse_args()
+except socket.timeout:
+    print("\n\033[1m[+]\033[0m \033[1m\033[31mConnection timed out. The target may not be reachable.\033[0m\033[0m")
 
-    if args.ports == "auto":
-        port_list = detect_open_ports(args.target, range(1, 10000))
-    else:
-        port_list = [int(p) for p in args.ports.split(",")]
+except Exception as e:
+    print("\n\033[1m[+]\033[0m \033[1m\033[31mError:\033[0m\033[0m", str(e))
 
-    if port_list:
-        scan_target(args.target, port_list)
-    else:
-        print(f"{RED}[!] No open ports detected.{RESET}")
+finally:
+    s.close()
